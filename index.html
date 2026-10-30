@@ -1,1 +1,290 @@
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AN MODS VIDEO DOWNLOADER</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  background:#050812;
+  color:white;
+  font-family:Arial,sans-serif;
+  min-height:100vh;
+  padding:20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.app{
+  width:100%;
+  max-width:480px;
+  background:#0d1424;
+  border:1px solid #183c68;
+  border-radius:22px;
+  padding:24px;
+  box-shadow:0 0 35px #087bff25;
+}
+
+.logo{
+  width:65px;
+  height:65px;
+  margin:auto;
+  border-radius:20px;
+  display:grid;
+  place-items:center;
+  font-size:30px;
+  font-weight:bold;
+  background:linear-gradient(135deg,#007bff,#8b35ff);
+  box-shadow:0 0 25px #087bff70;
+}
+
+h1{
+  text-align:center;
+  margin-top:18px;
+  font-size:23px;
+  letter-spacing:1px;
+}
+
+h1 span{color:#2196ff}
+
+.subtitle{
+  text-align:center;
+  color:#899bb5;
+  font-size:13px;
+  margin:10px 0 28px;
+}
+
+.label{
+  color:#b7c9e3;
+  font-size:13px;
+  margin-bottom:10px;
+  display:block;
+}
+
+.inputbox{
+  display:flex;
+  background:#070d19;
+  border:1px solid #23446c;
+  border-radius:12px;
+  padding:5px;
+}
+
+input{
+  width:100%;
+  min-width:0;
+  background:transparent;
+  border:0;
+  outline:0;
+  color:white;
+  padding:13px 10px;
+  font-size:14px;
+}
+
+button{
+  border:0;
+  cursor:pointer;
+  border-radius:10px;
+  font-weight:bold;
+}
+
+.paste{
+  background:#087cff;
+  color:white;
+  padding:0 15px;
+}
+
+.preview{
+  display:none;
+  margin-top:22px;
+  background:#070d19;
+  border:1px solid #203c60;
+  border-radius:15px;
+  overflow:hidden;
+}
+
+.preview img{
+  width:100%;
+  display:block;
+}
+
+.info{padding:15px}
+
+.info h3{
+  font-size:15px;
+  margin-bottom:8px;
+}
+
+.info p{
+  font-size:12px;
+  color:#8295ae;
+  line-height:1.6;
+}
+
+.open{
+  width:100%;
+  padding:14px;
+  margin-top:14px;
+  color:white;
+  background:linear-gradient(90deg,#087cff,#713bff);
+  font-size:14px;
+}
+
+.message{
+  color:#ffcf70;
+  font-size:12px;
+  margin-top:15px;
+  text-align:center;
+  line-height:1.6;
+}
+
+.footer{
+  text-align:center;
+  color:#63738c;
+  font-size:11px;
+  margin-top:27px;
+}
+
+.footer span{color:#2196ff}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="logo">A</div>
+
+  <h1>AN <span>MODS</span></h1>
+
+  <p class="subtitle">VIDEO LINK PREVIEW TOOL</p>
+
+  <label class="label">PASTE YOUTUBE VIDEO URL</label>
+
+  <div class="inputbox">
+    <input id="url" type="url"
+    placeholder="Paste YouTube link here...">
+
+    <button class="paste" onclick="pasteLink()">PASTE</button>
+  </div>
+
+  <div class="preview" id="preview">
+    <img id="thumbnail" alt="Video thumbnail">
+
+    <div class="info">
+      <h3>YouTube Video Preview</h3>
+      <p id="videoid"></p>
+
+      <button class="open" onclick="openVideo()">
+        OPEN VIDEO ON YOUTUBE
+      </button>
+    </div>
+  </div>
+
+  <p class="message" id="message">
+    Paste a YouTube link to preview its thumbnail.
+  </p>
+
+  <div class="footer">
+    POWERED BY <span>AN MODS</span>
+  </div>
+
+</div>
+
+<script>
+
+let currentURL = "";
+
+function getVideoID(url){
+
+  try{
+    let u = new URL(url);
+    let id = "";
+
+    if(u.hostname.includes("youtu.be")){
+      id = u.pathname.slice(1);
+    }
+    else if(u.hostname.includes("youtube.com")){
+      id = u.searchParams.get("v") || "";
+
+      if(!id && u.pathname.startsWith("/shorts/")){
+        id = u.pathname.split("/")[2];
+      }
+
+      if(!id && u.pathname.startsWith("/embed/")){
+        id = u.pathname.split("/")[2];
+      }
+    }
+
+    return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
+
+  }catch(e){
+    return null;
+  }
+}
+
+function previewVideo(){
+
+  let url = document.getElementById("url").value.trim();
+  let id = getVideoID(url);
+
+  let msg = document.getElementById("message");
+
+  if(!id){
+    msg.innerText = "Please enter a valid YouTube URL.";
+    document.getElementById("preview").style.display="none";
+    return;
+  }
+
+  currentURL = "https://www.youtube.com/watch?v=" + id;
+
+  document.getElementById("thumbnail").src =
+    "https://img.youtube.com/vi/" + id + "/hqdefault.jpg";
+
+  document.getElementById("videoid").innerText =
+    "Video ID: " + id;
+
+  document.getElementById("preview").style.display="block";
+
+  msg.innerText = "Thumbnail preview loaded successfully.";
+}
+
+async function pasteLink(){
+
+  try{
+    let text = await navigator.clipboard.readText();
+
+    document.getElementById("url").value = text;
+
+    previewVideo();
+
+  }catch(e){
+    document.getElementById("message").innerText =
+    "Clipboard permission unavailable. Please paste manually.";
+  }
+}
+
+function openVideo(){
+
+  if(currentURL){
+    window.open(currentURL,"_blank");
+  }
+
+}
+
+document.getElementById("url").addEventListener("input",function(){
+  if(this.value.trim().length > 5){
+    previewVideo();
+  }
+});
+
+</script>
+
+</body>
+</html>
